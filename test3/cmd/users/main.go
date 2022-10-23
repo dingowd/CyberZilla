@@ -11,6 +11,8 @@ import (
 	"github.com/dingowd/CyberZilla/test3/internal/logger"
 	"github.com/dingowd/CyberZilla/test3/internal/logger/lrus"
 	"github.com/dingowd/CyberZilla/test3/internal/logger/standart"
+	"github.com/dingowd/CyberZilla/test3/internal/pusher"
+	standartpush "github.com/dingowd/CyberZilla/test3/internal/pusher/standart"
 	"github.com/dingowd/CyberZilla/test3/internal/storage"
 	"github.com/dingowd/CyberZilla/test3/internal/storage/mysql"
 	"io"
@@ -59,8 +61,12 @@ func main() {
 	}
 	defer store.Close()
 
+	// init pusher
+	var push pusher.Pusher
+	push = standartpush.New(output)
+
 	// init application
-	users := app.New(logg, store)
+	users := app.New(logg, store, push)
 
 	// init http server
 	server := httpserver.NewServer(users, conf.HTTPSrv)

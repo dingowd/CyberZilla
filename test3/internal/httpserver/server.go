@@ -50,6 +50,7 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 		w.Write(utils.ReturnError(err.Error()))
 		return
 	}
+	s.App.Pusher.Push(user)
 	w.Write(utils.ReturnStatus("Ok"))
 }
 
