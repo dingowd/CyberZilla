@@ -9,8 +9,14 @@ type Groups struct {
 }
 
 type User struct {
+	ID      int    `json:"id" db:"id"`
 	Name    string `json:"name" db:"name"`
 	GroupId int    `json:"group_id" db:"group_id"`
 	Pass    string `json:"pass" db:"pass"`
 	Email   string `json:"email" db:"email"`
+}
+
+type Rights struct {
+	Name  string
+	Right bool
 }
