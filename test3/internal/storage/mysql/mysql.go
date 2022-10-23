@@ -34,7 +34,7 @@ func (s *Storage) Close() error {
 }
 
 func (s *Storage) CreateUser(admin string, user models.User) error {
-	if !s.IsAdmin(admin) {
+	if !s.IsAdmin(admin, "r_create") {
 		return errors.New("User " + admin + " is not admin")
 	}
 	if s.IsUserExist(user.Name) {
@@ -49,7 +49,7 @@ func (s *Storage) CreateUser(admin string, user models.User) error {
 
 func (s *Storage) ViewUser(admin string, user string) (models.User, error) {
 	var u models.User
-	if !s.IsAdmin(admin) {
+	if !s.IsAdmin(admin, "r_read") {
 		return u, errors.New("User " + admin + " is not admin")
 	}
 	query := `select * from users where name = ?`
@@ -61,7 +61,7 @@ func (s *Storage) ViewUser(admin string, user string) (models.User, error) {
 }
 
 func (s *Storage) UpdateUser(admin string, user models.User) error {
-	if !s.IsAdmin(admin) {
+	if !s.IsAdmin(admin, "r_update") {
 		return errors.New("User " + admin + " is not admin")
 	}
 	if !s.IsUserExist(user.Name) {
@@ -78,7 +78,7 @@ func (s *Storage) DeleteUser(admin string, user string) error {
 	if admin == user {
 		return errors.New("Unable to delete yourself")
 	}
-	if !s.IsAdmin(admin) {
+	if !s.IsAdmin(admin, "r_delete") {
 		return errors.New("User " + admin + " is not admin")
 	}
 	if !s.IsUserExist(user) {
@@ -91,9 +91,9 @@ func (s *Storage) DeleteUser(admin string, user string) error {
 	return nil
 }
 
-func (s *Storage) IsAdmin(admin string) bool {
+func (s *Storage) IsAdmin(admin, right string) bool {
 	var r models.Rights
-	query := `  select users.name, r_create from users 
+	query := `  select users.name, ` + right + ` from users 
 				inner join usersgroups on users.group_id = usersgroups.group_id 
 				where users.name = ?`
 	row := s.DB.QueryRow(query, admin)

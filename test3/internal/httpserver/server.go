@@ -23,7 +23,7 @@ func NewServer(app *app.App, addr string) *Server {
 func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "Method isn`t GET")
+		fmt.Fprint(w, "Method isn`t POST")
 		return
 	}
 	admin := r.URL.Query().Get("admin")
