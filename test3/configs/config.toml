@@ -1,0 +1,10 @@
+#to connect db
+dsn = "root:masterkey@/users"
+#http server parameters
+httpsrv = "127.0.0.1:1122"
+logname = "lrus"
+
+#logger parameters
+[logger]
+level = "INFO"
+logfile = "./log.txt"
