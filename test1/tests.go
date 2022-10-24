@@ -154,7 +154,6 @@ func (c *connWithCounter) WriteByteCount() uint64 {
 }
 
 // Чтобы структура connWithCounter реализовывала интерфейс net.Conn, нужно сделать proxy-реализацию всех недостающих методов
-// Пример для метода Close:
 func (c *connWithCounter) Close() error {
 	return c.conn.Close()
 }
