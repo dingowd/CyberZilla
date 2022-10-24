@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 )
 
 // Test1 принимает на вход список строк и выводит их в одной строке через пробел, возможно, в случайном порядке.
@@ -74,6 +75,7 @@ func Test2(filename, data string) error {
 //     ip, err := Test3("http://user:pass@127.0.0.1:3128/")
 func Test3(proxyURL string) (string, error) {
 	os.Setenv("HTTP_PROXY", proxyURL)
+	os.Setenv("HTTPS_PROXY", proxyURL)
 	resp, err := http.Get("https://httpbin.org/get")
 	if err != nil {
 		return "", err
@@ -113,12 +115,65 @@ func Test3(proxyURL string) (string, error) {
 //     ...
 //     fmt.Printf("Read: %d\n", countConn.ReadByteCount())
 //     fmt.Printf("Write: %d\n", countConn.WriteByteCount())
-func Test4(conn net.Conn) Test4Conn {
-	return nil
-}
 
 type Test4Conn interface {
 	net.Conn
 	ReadByteCount() uint64
 	WriteByteCount() uint64
+}
+
+type connWithCounter struct {
+	conn       net.Conn
+	bytesRead  int
+	bytesWrite int
+	mu         sync.Mutex
+}
+
+func (c *connWithCounter) Read(b []byte) (n int, err error) {
+	n, err = c.conn.Read(b)
+	c.mu.Lock()
+	c.bytesRead = c.bytesRead + n
+	c.mu.Unlock()
+	return
+}
+
+func (c *connWithCounter) Write(b []byte) (n int, err error) {
+	n, err = c.conn.Write(b)
+	c.mu.Lock()
+	c.bytesWrite = c.bytesWrite + n
+	c.mu.Unlock()
+	return
+}
+
+func (c *connWithCounter) ReadByteCount() uint64 {
+	return uint64(c.bytesRead)
+}
+
+func (c *connWithCounter) WriteByteCount() uint64 {
+	return uint64(c.bytesWrite)
+}
+
+// Чтобы структура connWithCounter реализовывала интерфейс net.Conn, нужно сделать proxy-реализацию всех недостающих методов
+// Пример для метода Close:
+func (c *connWithCounter) Close() error {
+	return c.conn.Close()
+}
+
+func (c *connWithCounter) LocalAddr() net.Addr {
+	return c.conn.LocalAddr()
+}
+
+func (c *connWithCounter) RemoteAddr() net.Addr {
+	return c.conn.RemoteAddr()
+}
+func (c *connWithCounter) SetDeadline(t time.Time) error {
+	return c.conn.SetDeadline(t)
+}
+
+func (c *connWithCounter) SetReadDeadline(t time.Time) error {
+	return c.conn.SetReadDeadline(t)
+}
+
+func (c *connWithCounter) SetWriteDeadline(t time.Time) error {
+	return c.conn.SetWriteDeadline(t)
 }
